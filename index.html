@@ -23,9 +23,21 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; background: var(--bg); font-family: Inter, Arial, sans-serif; color: var(--text); }
 
-    #map { width: 100vw; height: 100vh; position: absolute; top: 0; bottom: 0; }
+    body {
+      overflow: hidden;
+      background: var(--bg);
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+    }
 
     .hud {
       position: fixed;
@@ -41,15 +53,42 @@
       box-shadow: var(--shadow);
       pointer-events: none;
     }
+
     .hud * { pointer-events: auto; }
-    .hud h1 { font-size: 24px; color: var(--neon-blue); margin-bottom: 6px; }
-    .hud p { color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-    .legend { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-    .legend-color { width: 12px; height: 12px; border-radius: 999px; }
+    .hud h1 {
+      font-size: 24px;
+      color: var(--neon-blue);
+      margin-bottom: 6px;
+    }
 
-    /* POPUP STYLES - RESTORED */
+    .hud p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .legend {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
     .popup {
       position: fixed;
       top: 50%;
@@ -70,26 +109,134 @@
       box-shadow: 0 0 50px rgba(0,0,0,0.6), 0 0 25px rgba(0,217,255,0.15);
     }
 
-    .popup.active { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
-    .popup-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
-    .popup-title { font-size: 28px; font-weight: 700; color: var(--neon-blue); }
-    .popup-category { margin-top: 6px; display: inline-block; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 999px; color: var(--muted); font-size: 12px; text-transform: capitalize;}
-    .close-btn { border: none; background: transparent; color: white; font-size: 28px; cursor: pointer; }
-    .popup-image { width: 100%; height: 240px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
-    .section { margin-bottom: 20px; }
-    .section h3 { margin-bottom: 10px; color: var(--neon-pink); font-size: 15px; letter-spacing: 1px; }
-    .section .cost-header { color: var(--neon-orange); }
-    .section p, .section li { color: var(--muted); line-height: 1.7; font-size: 14px; }
-    .ratings { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .rating-card { flex: 1; min-width: 90px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 10px; border-radius: 14px; text-align: center; }
-    .rating-card span { display: block; color: var(--neon-green); font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+    .popup.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1);
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .popup-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--neon-blue);
+    }
+
+    .popup-category {
+      margin-top: 6px;
+      display: inline-block;
+      background: rgba(255,255,255,0.08);
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: capitalize;
+    }
+
+    .close-btn {
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .popup-image {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section h3 {
+      margin-bottom: 10px;
+      color: var(--neon-pink);
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    .section .cost-header {
+      color: var(--neon-orange);
+    }
+
+    .section p,
+    .section li {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .ratings {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rating-card {
+      flex: 1;
+      min-width: 90px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .rating-card span {
+      display: block;
+      color: var(--neon-green);
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .map-link {
+      display: inline-block;
+      padding: 12px 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .map-link:hover {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 15px rgba(0,217,255,0.25);
+      color: var(--neon-blue);
+    }
   </style>
 </head>
+
 <body>
 
 <div class="hud">
   <h1>Davao Explorer</h1>
   <p>Click glowing locations to open reviews, tips, ratings, and photos.</p>
+
   <div class="legend">
     <div class="legend-item"><div class="legend-color" style="background:#00d9ff"></div>Attractions</div>
     <div class="legend-item"><div class="legend-color" style="background:#ff2fd1"></div>Restaurants</div>
@@ -108,19 +255,32 @@
     </div>
     <button class="close-btn" id="closeBtn">&times;</button>
   </div>
+
   <img id="popupImage" class="popup-image"/>
+
   <div class="section">
-    <h3 class="cost-header">COST</h3>
-    <p id="popupCost"></p>
+    <div class="cost-row">
+      <div>
+        <h3 class="cost-header">COST</h3>
+        <p id="popupCost"></p>
+      </div>
+
+      <a id="popupMapLink" target="_blank" rel="noopener noreferrer" class="map-link">
+        Open in Google Maps
+      </a>
+    </div>
   </div>
+
   <div class="section">
     <h3>PERSONAL REVIEW</h3>
     <p id="popupReview"></p>
   </div>
+
   <div class="section">
     <h3>TIPS</h3>
     <ul id="popupTips"></ul>
   </div>
+
   <div class="section">
     <h3>RATINGS</h3>
     <div class="ratings" id="popupRatings"></div>
@@ -132,37 +292,48 @@
     {
       name: "People's Park",
       category: "park",
-      lat: 7.070652, lng: 125.608512,
+      lat: 7.070652,
+      lng: 125.608512,
+      googleMapsLink: "https://maps.app.goo.gl/YGgEumHghPxvhJ6U7",
       image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
       cost: "Free Entry",
       review: "Beautiful public park in the middle of the city. Very relaxing at night and surprisingly clean.",
       tips: ["Best visited around sunset", "Try local street food nearby", "Good photography spot"],
       ratings: { Atmosphere: 9, Crowds: 7, Safety: 9, Value: 10 }
     },
+
     {
       name: "Crocodile Park Picnic Grounds",
       category: "attraction",
-      lat: 7.0981100, lng: 125.5981083,
+      lat: 7.0981100,
+      lng: 125.5981083,
+      googleMapsLink: "https://maps.app.goo.gl/sHeSN8By2PmTkuTL7",
       image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
       cost: "₱450 per person",
       review: "Nice attractions but most animals are behind cages. They have an orangutan named Orange and a white tiger. The show is always the same. The guided tour is free and has good info on the animals.",
       tips: ["Do the guided tour.", "Sit in the middle if you want the best spot for the show.", "Bring an umbrella in case it rains."],
       ratings: { Walkability: 10, Activities: 3, Animals: 7, Value: 7 }
     },
+
     {
       name: "Abreeza Mall",
       category: "mall",
-      lat: 7.09122, lng: 125.61134,
+      lat: 7.09122,
+      lng: 125.61134,
+      googleMapsLink: "https://maps.app.goo.gl/mDkUasT5pzAUAkLy6",
       image: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200",
       cost: "Free Entry",
       review: "Modern mall with lots of food options and a more premium relaxed atmosphere.",
       tips: ["Weekdays are quieter", "Great coffee spots", "Cinema is excellent"],
       ratings: { Shopping: 9, Food: 9, Comfort: 10, Parking: 8 }
     },
+
     {
       name: "Roxas Night Market",
       category: "market",
-      lat: 7.071924, lng: 125.612201,
+      lat: 7.071924,
+      lng: 125.612201,
+      googleMapsLink: "https://maps.app.goo.gl/BBgAzFQNpbHz5e9c9",
       image: "https://images.unsplash.com/photo-1523906630133-f6934a1ab2b9?q=80&w=1200",
       cost: "Free Entry",
       review: "One of the best places for cheap food and authentic Davao nightlife.",
@@ -181,7 +352,7 @@
   };
 
   const DAVAO_BOUNDS = [
-    [125.35, 6.95], 
+    [125.35, 6.95],
     [125.85, 7.25]
   ];
 
@@ -198,17 +369,23 @@
       type: 'FeatureCollection',
       features: LOCATIONS.map(loc => ({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [loc.lng, loc.lat] },
-        properties: { 
-          ...loc, 
+        geometry: {
+          type: 'Point',
+          coordinates: [loc.lng, loc.lat]
+        },
+        properties: {
+          ...loc,
           tips: JSON.stringify(loc.tips),
           ratings: JSON.stringify(loc.ratings),
-          color: CATEGORY_COLORS[loc.category] 
+          color: CATEGORY_COLORS[loc.category]
         }
       }))
     };
 
-    map.addSource('places', { type: 'geojson', data: geojson });
+    map.addSource('places', {
+      type: 'geojson',
+      data: geojson
+    });
 
     map.addLayer({
       id: 'nodes',
@@ -242,20 +419,31 @@
 
     map.on('click', 'nodes', (e) => {
       const props = e.features[0].properties;
+
       openPopup({
         ...props,
         tips: JSON.parse(props.tips),
         ratings: JSON.parse(props.ratings)
       });
-      map.flyTo({ center: e.features[0].geometry.coordinates, zoom: 15 });
+
+      map.flyTo({
+        center: e.features[0].geometry.coordinates,
+        zoom: 15
+      });
     });
 
-    map.on('mouseenter', 'nodes', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'nodes', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'nodes', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'nodes', () => {
+      map.getCanvas().style.cursor = '';
+    });
   });
 
   function openPopup(location) {
     const popup = document.getElementById("popup");
+
     popup.classList.add("active");
 
     document.getElementById("popupTitle").textContent = location.name;
@@ -263,9 +451,11 @@
     document.getElementById("popupImage").src = location.image;
     document.getElementById("popupCost").textContent = location.cost;
     document.getElementById("popupReview").textContent = location.review;
+    document.getElementById("popupMapLink").href = location.googleMapsLink;
 
     const tipsContainer = document.getElementById("popupTips");
     tipsContainer.innerHTML = "";
+
     location.tips.forEach(tip => {
       const li = document.createElement("li");
       li.textContent = tip;
@@ -274,7 +464,8 @@
 
     const ratingsContainer = document.getElementById("popupRatings");
     ratingsContainer.innerHTML = "";
-    Object.entries(location.ratings).forEach(([k,v]) => {
+
+    Object.entries(location.ratings).forEach(([k, v]) => {
       const card = document.createElement("div");
       card.className = "rating-card";
       card.innerHTML = `<span>${v}/10</span>${k}`;
