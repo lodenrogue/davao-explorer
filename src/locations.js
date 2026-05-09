@@ -13,7 +13,7 @@ const LOCATIONS = [
     },
 
     {
-	name: "Crocodile Park Picnic Grounds",
+	name: "Crocodile Park",
 	category: "attraction",
 	lat: 7.0981100,
 	lng: 125.5981083,

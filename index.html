@@ -1,209 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Davao Interactive Map</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Davao Interactive Map</title>
 
-  <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
-  <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
-   <script src="src/locations.js" defer></script>
-  <link href="style.css" rel="stylesheet" />
-</head>
+    <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="src/locations.js" defer></script>
+    <script src="src/categories.js" defer></script>
+    <script src="src/map.js" defer></script>
+    <script src="src/popup.js" defer></script>
+    <link href="style.css" rel="stylesheet" />
+  </head>
 
-<body>
+  <body>
 
-<div class="hud">
-  <h1>Davao Explorer</h1>
-  <p>Click locations to open reviews, tips, ratings, and photos.</p>
+    <div class="hud">
+      <h1>Davao Explorer</h1>
+      <p>Click locations to open reviews, tips, ratings, and photos.</p>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-color" style="background:#00d9ff"></div>Attractions</div>
-    <div class="legend-item"><div class="legend-color" style="background:#ff2fd1"></div>Restaurants</div>
-    <div class="legend-item"><div class="legend-color" style="background:#00ffa3"></div>Malls</div>
-    <div class="legend-item"><div class="legend-color" style="background:#ff9f43"></div>Cafes</div>
-  </div>
-</div>
-
-<div id="map"></div>
-
-<div class="popup" id="popup">
-  <div class="popup-header">
-    <div>
-      <div class="popup-title" id="popupTitle"></div>
-      <div class="popup-category" id="popupCategory"></div>
+      <div class="legend">
+	<div class="legend-item"><div class="legend-color" style="background:#00d9ff"></div>Attractions</div>
+	<div class="legend-item"><div class="legend-color" style="background:#ff2fd1"></div>Restaurants</div>
+	<div class="legend-item"><div class="legend-color" style="background:#00ffa3"></div>Malls</div>
+	<div class="legend-item"><div class="legend-color" style="background:#ff9f43"></div>Cafes</div>
+      </div>
     </div>
-    <button class="close-btn" id="closeBtn">&times;</button>
-  </div>
 
-  <img id="popupImage" class="popup-image"/>
+    <div id="map"></div>
 
-  <div class="section">
-    <div class="cost-row">
-      <div>
-        <h3 class="cost-header">COST</h3>
-        <p id="popupCost"></p>
+    <div class="popup" id="popup">
+      <div class="popup-header">
+	<div>
+	  <div class="popup-title" id="popupTitle"></div>
+	  <div class="popup-category" id="popupCategory"></div>
+	</div>
+	<button class="close-btn" id="closeBtn">&times;</button>
       </div>
 
-      <a id="popupMapLink" target="_blank" rel="noopener noreferrer" class="map-link">
-        Open in Google Maps
-      </a>
+      <img id="popupImage" class="popup-image"/>
+
+      <div class="section">
+	<div class="cost-row">
+	  <div>
+            <h3 class="cost-header">COST</h3>
+            <p id="popupCost"></p>
+	  </div>
+
+	  <a id="popupMapLink" target="_blank" rel="noopener noreferrer" class="map-link">
+            Open in Google Maps
+	  </a>
+	</div>
+      </div>
+
+      <div class="section">
+	<h3>PERSONAL REVIEW</h3>
+	<p id="popupReview"></p>
+      </div>
+
+      <div class="section">
+	<h3>TIPS</h3>
+	<ul id="popupTips"></ul>
+      </div>
+
+      <div class="section">
+	<h3>RATINGS</h3>
+	<div class="ratings" id="popupRatings"></div>
+      </div>
     </div>
-  </div>
-
-  <div class="section">
-    <h3>PERSONAL REVIEW</h3>
-    <p id="popupReview"></p>
-  </div>
-
-  <div class="section">
-    <h3>TIPS</h3>
-    <ul id="popupTips"></ul>
-  </div>
-
-  <div class="section">
-    <h3>RATINGS</h3>
-    <div class="ratings" id="popupRatings"></div>
-  </div>
-</div>
-
-<script>
-
-  const CATEGORY_COLORS = {
-    attraction: "#00d9ff",
-    restaurant: "#ff2fd1",
-    park: "#ff2fd1",
-    market: "#ff2fd1",
-    mall: "#00ffa3",
-    cafe: "#ff9f43"
-  };
-
-  const DAVAO_BOUNDS = [
-    [125.35, 6.95],
-    [125.85, 7.25]
-  ];
-
-  const map = new maplibregl.Map({
-    container: 'map',
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    center: [125.6128, 7.0731],
-    zoom: 13,
-    maxBounds: DAVAO_BOUNDS
-  });
-
-  map.on('load', () => {
-    const geojson = {
-      type: 'FeatureCollection',
-      features: LOCATIONS.map(loc => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [loc.lng, loc.lat]
-        },
-        properties: {
-          ...loc,
-          tips: JSON.stringify(loc.tips),
-          ratings: JSON.stringify(loc.ratings),
-          color: CATEGORY_COLORS[loc.category]
-        }
-      }))
-    };
-
-    map.addSource('places', {
-      type: 'geojson',
-      data: geojson
-    });
-
-    map.addLayer({
-      id: 'nodes',
-      type: 'circle',
-      source: 'places',
-      paint: {
-        'circle-radius': 10,
-        'circle-color': ['get', 'color'],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    });
-
-    map.addLayer({
-      id: 'node-labels',
-      type: 'symbol',
-      source: 'places',
-      layout: {
-        'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold'],
-        'text-size': 12,
-        'text-offset': [0, -1.8],
-        'text-anchor': 'bottom'
-      },
-      paint: {
-        'text-color': '#ffffff',
-        'text-halo-color': 'rgba(0,0,0,0.8)',
-        'text-halo-width': 1.5
-      }
-    });
-
-    map.on('click', 'nodes', (e) => {
-      const props = e.features[0].properties;
-
-      openPopup({
-        ...props,
-        tips: JSON.parse(props.tips),
-        ratings: JSON.parse(props.ratings)
-      });
-
-      map.flyTo({
-        center: e.features[0].geometry.coordinates,
-        zoom: 15
-      });
-    });
-
-    map.on('mouseenter', 'nodes', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'nodes', () => {
-      map.getCanvas().style.cursor = '';
-    });
-  });
-
-  function openPopup(location) {
-    const popup = document.getElementById("popup");
-
-    popup.classList.add("active");
-
-    document.getElementById("popupTitle").textContent = location.name;
-    document.getElementById("popupCategory").textContent = location.category;
-    document.getElementById("popupImage").src = location.image;
-    document.getElementById("popupCost").textContent = location.cost;
-    document.getElementById("popupReview").textContent = location.review;
-    document.getElementById("popupMapLink").href = location.googleMapsLink;
-
-    const tipsContainer = document.getElementById("popupTips");
-    tipsContainer.innerHTML = "";
-
-    location.tips.forEach(tip => {
-      const li = document.createElement("li");
-      li.textContent = tip;
-      tipsContainer.appendChild(li);
-    });
-
-    const ratingsContainer = document.getElementById("popupRatings");
-    ratingsContainer.innerHTML = "";
-
-    Object.entries(location.ratings).forEach(([k, v]) => {
-      const card = document.createElement("div");
-      card.className = "rating-card";
-      card.innerHTML = `<span>${v}/10</span>${k}`;
-      ratingsContainer.appendChild(card);
-    });
-  }
-
-  document.getElementById("closeBtn").addEventListener("click", () => {
-    document.getElementById("popup").classList.remove("active");
-  });
-</script>
-
-</body>
+  </body>
 </html>
