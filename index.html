@@ -78,6 +78,7 @@
     .popup-image { width: 100%; height: 240px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
     .section { margin-bottom: 20px; }
     .section h3 { margin-bottom: 10px; color: var(--neon-pink); font-size: 15px; letter-spacing: 1px; }
+    .section .cost-header { color: var(--neon-orange); }
     .section p, .section li { color: var(--muted); line-height: 1.7; font-size: 14px; }
     .ratings { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .rating-card { flex: 1; min-width: 90px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 10px; border-radius: 14px; text-align: center; }
@@ -109,6 +110,10 @@
   </div>
   <img id="popupImage" class="popup-image"/>
   <div class="section">
+    <h3 class="cost-header">COST</h3>
+    <p id="popupCost"></p>
+  </div>
+  <div class="section">
     <h3>PERSONAL REVIEW</h3>
     <p id="popupReview"></p>
   </div>
@@ -129,6 +134,7 @@
       category: "park",
       lat: 7.070652, lng: 125.608512,
       image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
+      cost: "Free Entry",
       review: "Beautiful public park in the middle of the city. Very relaxing at night and surprisingly clean.",
       tips: ["Best visited around sunset", "Try local street food nearby", "Good photography spot"],
       ratings: { Atmosphere: 9, Crowds: 7, Safety: 9, Value: 10 }
@@ -138,8 +144,9 @@
       category: "attraction",
       lat: 7.0981100, lng: 125.5981083,
       image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
+      cost: "₱450 per person",
       review: "Nice attractions but most animals are behind cages. They have an orangutan named Orange and a white tiger. The show is always the same. The guided tour is free and has good info on the animals.",
-      tips: ["Do the guided tour", "Sit in the middle if you want the best spot for the show", "Bring an umbrella in case it rains"],
+      tips: ["Do the guided tour.", "Sit in the middle if you want the best spot for the show.", "Bring an umbrella in case it rains."],
       ratings: { Walkability: 10, Activities: 3, Animals: 7, Value: 7 }
     },
     {
@@ -147,6 +154,7 @@
       category: "mall",
       lat: 7.09122, lng: 125.61134,
       image: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200",
+      cost: "Free Entry",
       review: "Modern mall with lots of food options and a more premium relaxed atmosphere.",
       tips: ["Weekdays are quieter", "Great coffee spots", "Cinema is excellent"],
       ratings: { Shopping: 9, Food: 9, Comfort: 10, Parking: 8 }
@@ -156,6 +164,7 @@
       category: "market",
       lat: 7.071924, lng: 125.612201,
       image: "https://images.unsplash.com/photo-1523906630133-f6934a1ab2b9?q=80&w=1200",
+      cost: "Free Entry",
       review: "One of the best places for cheap food and authentic Davao nightlife.",
       tips: ["Bring cash", "Gets crowded late at night", "Try grilled seafood"],
       ratings: { Food: 10, Price: 10, Crowds: 5, Experience: 10 }
@@ -185,7 +194,6 @@
   });
 
   map.on('load', () => {
-    // We stringify the objects/arrays because GeoJSON properties must be flat
     const geojson = {
       type: 'FeatureCollection',
       features: LOCATIONS.map(loc => ({
@@ -202,7 +210,6 @@
 
     map.addSource('places', { type: 'geojson', data: geojson });
 
-    // SNAPPY NODES (GPU Rendered)
     map.addLayer({
       id: 'nodes',
       type: 'circle',
@@ -215,7 +222,6 @@
       }
     });
 
-    // LABELS ABOVE NODES
     map.addLayer({
       id: 'node-labels',
       type: 'symbol',
@@ -255,6 +261,7 @@
     document.getElementById("popupTitle").textContent = location.name;
     document.getElementById("popupCategory").textContent = location.category;
     document.getElementById("popupImage").src = location.image;
+    document.getElementById("popupCost").textContent = location.cost;
     document.getElementById("popupReview").textContent = location.review;
 
     const tipsContainer = document.getElementById("popupTips");
