@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Davao Interactive Map</title>
 
-  <!-- MapLibre GL JS -->
   <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
 
@@ -24,21 +23,9 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: var(--bg); font-family: Inter, Arial, sans-serif; color: var(--text); }
 
-    body {
-      overflow: hidden;
-      background: var(--bg);
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text);
-    }
-
-    #map {
-      width: 100vw;
-      height: 100vh;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-    }
+    #map { width: 100vw; height: 100vh; position: absolute; top: 0; bottom: 0; }
 
     .hud {
       position: fixed;
@@ -52,40 +39,17 @@
       border-radius: 24px;
       padding: 18px;
       box-shadow: var(--shadow);
-      pointer-events: none; /* Allow clicking through HUD background */
+      pointer-events: none;
     }
-
     .hud * { pointer-events: auto; }
-
     .hud h1 { font-size: 24px; color: var(--neon-blue); margin-bottom: 6px; }
     .hud p { color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-    .legend {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
+    .legend { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .legend-item { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
     .legend-color { width: 12px; height: 12px; border-radius: 999px; }
 
-    /* Custom Marker Styling */
-    .custom-marker {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 2px solid white;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      transition: transform 0.2s;
-    }
-    .custom-marker:hover {
-      transform: scale(1.3);
-      z-index: 100;
-    }
-
-    /* POPUP */
+    /* POPUP STYLES - RESTORED */
     .popup {
       position: fixed;
       top: 50%;
@@ -109,7 +73,7 @@
     .popup.active { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
     .popup-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
     .popup-title { font-size: 28px; font-weight: 700; color: var(--neon-blue); }
-    .popup-category { margin-top: 6px; display: inline-block; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 999px; color: var(--muted); font-size: 12px; }
+    .popup-category { margin-top: 6px; display: inline-block; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 999px; color: var(--muted); font-size: 12px; text-transform: capitalize;}
     .close-btn { border: none; background: transparent; color: white; font-size: 28px; cursor: pointer; }
     .popup-image { width: 100%; height: 240px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
     .section { margin-bottom: 20px; }
@@ -118,19 +82,13 @@
     .ratings { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .rating-card { flex: 1; min-width: 90px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 10px; border-radius: 14px; text-align: center; }
     .rating-card span { display: block; color: var(--neon-green); font-size: 20px; font-weight: bold; margin-bottom: 4px; }
-
-    @media (max-width: 900px) {
-      .popup { width: calc(100vw - 20px); left: 10px; right: 10px; top: auto; bottom: 10px; transform: scale(0.95); max-height: 70vh; }
-      .popup.active { transform: scale(1); }
-      .hud { width: calc(100vw - 40px); }
-    }
   </style>
 </head>
 <body>
 
 <div class="hud">
   <h1>Davao Explorer</h1>
-  <p>Click the glowing markers to explore local favorites.</p>
+  <p>Click glowing locations to open reviews, tips, ratings, and photos.</p>
   <div class="legend">
     <div class="legend-item"><div class="legend-color" style="background:#00d9ff"></div>Attractions</div>
     <div class="legend-item"><div class="legend-color" style="background:#ff2fd1"></div>Restaurants</div>
@@ -149,7 +107,7 @@
     </div>
     <button class="close-btn" id="closeBtn">&times;</button>
   </div>
-  <img id="popupImage" class="popup-image" src=""/>
+  <img id="popupImage" class="popup-image"/>
   <div class="section">
     <h3>PERSONAL REVIEW</h3>
     <p id="popupReview"></p>
@@ -202,19 +160,87 @@
     cafe: "#ff9f43"
   };
 
-  // Initialize MapLibre
+  const DAVAO_BOUNDS = [
+    [125.35, 6.95], 
+    [125.85, 7.25]
+  ];
+
   const map = new maplibregl.Map({
     container: 'map',
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    center: [125.6128, 7.0731], // [lng, lat]
-    zoom: 13
+    center: [125.6128, 7.0731],
+    zoom: 13,
+    maxBounds: DAVAO_BOUNDS
   });
 
-  // Handle markers and popup logic
-  const popupElement = document.getElementById("popup");
+  map.on('load', () => {
+    // We stringify the objects/arrays because GeoJSON properties must be flat
+    const geojson = {
+      type: 'FeatureCollection',
+      features: LOCATIONS.map(loc => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [loc.lng, loc.lat] },
+        properties: { 
+          ...loc, 
+          tips: JSON.stringify(loc.tips),
+          ratings: JSON.stringify(loc.ratings),
+          color: CATEGORY_COLORS[loc.category] 
+        }
+      }))
+    };
+
+    map.addSource('places', { type: 'geojson', data: geojson });
+
+    // SNAPPY NODES (GPU Rendered)
+    map.addLayer({
+      id: 'nodes',
+      type: 'circle',
+      source: 'places',
+      paint: {
+        'circle-radius': 10,
+        'circle-color': ['get', 'color'],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff'
+      }
+    });
+
+    // LABELS ABOVE NODES
+    map.addLayer({
+      id: 'node-labels',
+      type: 'symbol',
+      source: 'places',
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-font': ['Open Sans Bold'],
+        'text-size': 12,
+        'text-offset': [0, -1.8],
+        'text-anchor': 'bottom'
+      },
+      paint: {
+        'text-color': '#ffffff',
+        'text-halo-color': 'rgba(0,0,0,0.8)',
+        'text-halo-width': 1.5
+      }
+    });
+
+    map.on('click', 'nodes', (e) => {
+      const props = e.features[0].properties;
+      openPopup({
+        ...props,
+        tips: JSON.parse(props.tips),
+        ratings: JSON.parse(props.ratings)
+      });
+      map.flyTo({ center: e.features[0].geometry.coordinates, zoom: 15 });
+    });
+
+    map.on('mouseenter', 'nodes', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'nodes', () => map.getCanvas().style.cursor = '');
+  });
 
   function openPopup(location) {
-    popupElement.classList.add("active");
+    const popup = document.getElementById("popup");
+    popup.classList.add("active");
+
     document.getElementById("popupTitle").textContent = location.name;
     document.getElementById("popupCategory").textContent = location.category;
     document.getElementById("popupImage").src = location.image;
@@ -238,26 +264,8 @@
     });
   }
 
-  // Close Popup
   document.getElementById("closeBtn").addEventListener("click", () => {
-    popupElement.classList.remove("active");
-  });
-
-  // Add markers to map
-  LOCATIONS.forEach(loc => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundColor = CATEGORY_COLORS[loc.category] || "#00d9ff";
-    el.style.boxShadow = `0 0 15px ${CATEGORY_COLORS[loc.category]}cc`;
-
-    new maplibregl.Marker({ element: el })
-      .setLngLat([loc.lng, loc.lat])
-      .addTo(map);
-
-    el.addEventListener('click', () => {
-      openPopup(loc);
-      map.flyTo({ center: [loc.lng, loc.lat], zoom: 15, essential: true });
-    });
+    document.getElementById("popup").classList.remove("active");
   });
 </script>
 
