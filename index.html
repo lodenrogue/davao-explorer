@@ -5,44 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Davao Interactive Map</title>
 
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+
   <style>
     :root {
       --bg: #050816;
       --panel: rgba(12, 18, 30, 0.88);
       --border: rgba(255,255,255,0.08);
-
       --text: #eef4ff;
       --muted: #93a4c3;
-
       --neon-blue: #00d9ff;
       --neon-pink: #ff2fd1;
       --neon-green: #00ffa3;
       --neon-orange: #ff9f43;
-
       --shadow: 0 0 25px rgba(0,217,255,0.2);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       overflow: hidden;
-      background:
-        radial-gradient(circle at top, #121b2f 0%, #04060d 70%);
+      background: var(--bg);
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
     }
 
-    canvas {
+    #map {
       width: 100vw;
       height: 100vh;
-      display: block;
-      cursor: grab;
-      background:
-        radial-gradient(circle at center, rgba(0,217,255,0.04), transparent 40%);
+      position: absolute;
+      top: 0;
+      bottom: 0;
     }
 
     .hud {
@@ -50,256 +45,84 @@
       top: 20px;
       left: 20px;
       z-index: 50;
-
       width: 340px;
-
       background: var(--panel);
       backdrop-filter: blur(16px);
-
       border: 1px solid var(--border);
       border-radius: 24px;
-
       padding: 18px;
-
       box-shadow: var(--shadow);
+      pointer-events: none; /* Allow clicking through HUD background */
     }
 
-    .hud h1 {
-      font-size: 24px;
-      color: var(--neon-blue);
-      margin-bottom: 6px;
-    }
+    .hud * { pointer-events: auto; }
 
-    .hud p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
+    .hud h1 { font-size: 24px; color: var(--neon-blue); margin-bottom: 6px; }
+    .hud p { color: var(--muted); font-size: 13px; line-height: 1.5; }
 
     .legend {
       margin-top: 16px;
-
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .legend-item { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 999px; }
 
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-    }
-
-    .controls {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-
-      background: var(--panel);
-
-      border: 1px solid var(--border);
-      border-radius: 18px;
-
-      padding: 14px;
-
-      display: flex;
-      gap: 10px;
-
-      z-index: 20;
-    }
-
-    .control-btn {
-      border: none;
-
-      background: rgba(255,255,255,0.06);
-
-      color: white;
-
-      padding: 10px 14px;
-
-      border-radius: 12px;
-
+    /* Custom Marker Styling */
+    .custom-marker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid white;
       cursor: pointer;
-
-      transition: 0.2s;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+    .custom-marker:hover {
+      transform: scale(1.3);
+      z-index: 100;
     }
 
-    .control-btn:hover {
-      background: rgba(255,255,255,0.12);
-    }
-
-    /*
-      ======================================================
-      POPUP
-      ======================================================
-    */
-
+    /* POPUP */
     .popup {
       position: fixed;
       top: 50%;
       right: 40px;
       transform: translateY(-50%) scale(0.95);
-
       width: 430px;
       max-height: 90vh;
       overflow-y: auto;
-
       background: rgba(15, 20, 32, 0.92);
       border: 1px solid var(--border);
       backdrop-filter: blur(20px);
-
       border-radius: 22px;
-
       padding: 24px;
-
       opacity: 0;
       pointer-events: none;
-
       transition: 0.25s ease;
-
       z-index: 100;
-
-      box-shadow:
-        0 0 50px rgba(0,0,0,0.6),
-        0 0 25px rgba(0,217,255,0.15);
+      box-shadow: 0 0 50px rgba(0,0,0,0.6), 0 0 25px rgba(0,217,255,0.15);
     }
 
-    .popup.active {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(-50%) scale(1);
-    }
-
-    .popup-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 18px;
-    }
-
-    .popup-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--neon-blue);
-    }
-
-    .popup-category {
-      margin-top: 6px;
-      display: inline-block;
-
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-
-      padding: 4px 10px;
-      border-radius: 999px;
-
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .close-btn {
-      border: none;
-      background: transparent;
-      color: white;
-      font-size: 28px;
-      cursor: pointer;
-    }
-
-    .popup-image {
-      width: 100%;
-      height: 240px;
-      object-fit: cover;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-
-    .section {
-      margin-bottom: 20px;
-    }
-
-    .section h3 {
-      margin-bottom: 10px;
-      color: var(--neon-pink);
-      font-size: 15px;
-      letter-spacing: 1px;
-    }
-
-    .section p,
-    .section li {
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    ul {
-      padding-left: 20px;
-    }
-
-    .ratings {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .rating-card {
-      flex: 1;
-      min-width: 90px;
-
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-
-      padding: 10px;
-      border-radius: 14px;
-
-      text-align: center;
-    }
-
-    .rating-card span {
-      display: block;
-      color: var(--neon-green);
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    .popup::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .popup::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.1);
-      border-radius: 999px;
-    }
+    .popup.active { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
+    .popup-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
+    .popup-title { font-size: 28px; font-weight: 700; color: var(--neon-blue); }
+    .popup-category { margin-top: 6px; display: inline-block; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 999px; color: var(--muted); font-size: 12px; }
+    .close-btn { border: none; background: transparent; color: white; font-size: 28px; cursor: pointer; }
+    .popup-image { width: 100%; height: 240px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .section { margin-bottom: 20px; }
+    .section h3 { margin-bottom: 10px; color: var(--neon-pink); font-size: 15px; letter-spacing: 1px; }
+    .section p, .section li { color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .ratings { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .rating-card { flex: 1; min-width: 90px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 10px; border-radius: 14px; text-align: center; }
+    .rating-card span { display: block; color: var(--neon-green); font-size: 20px; font-weight: bold; margin-bottom: 4px; }
 
     @media (max-width: 900px) {
-      .popup {
-        width: calc(100vw - 20px);
-        left: 10px;
-        right: 10px;
-        top: auto;
-        bottom: 10px;
-        transform: scale(0.95);
-        max-height: 70vh;
-      }
-
-      .popup.active {
-        transform: scale(1);
-      }
-
-      .hud {
-        width: calc(100vw - 40px);
-      }
+      .popup { width: calc(100vw - 20px); left: 10px; right: 10px; top: auto; bottom: 10px; transform: scale(0.95); max-height: 70vh; }
+      .popup.active { transform: scale(1); }
+      .hud { width: calc(100vw - 40px); }
     }
   </style>
 </head>
@@ -307,175 +130,70 @@
 
 <div class="hud">
   <h1>Davao Explorer</h1>
-
-  <p>
-    Click glowing locations to open reviews, tips, ratings, and
-    photos.
-  </p>
-
+  <p>Click the glowing markers to explore local favorites.</p>
   <div class="legend">
-    <div class="legend-item">
-      <div class="legend-color" style="background:#00d9ff"></div>
-      Attractions
-    </div>
-
-    <div class="legend-item">
-      <div class="legend-color" style="background:#ff2fd1"></div>
-      Restaurants
-    </div>
-
-    <div class="legend-item">
-      <div class="legend-color" style="background:#00ffa3"></div>
-      Malls
-    </div>
-
-    <div class="legend-item">
-      <div class="legend-color" style="background:#ff9f43"></div>
-      Cafes
-    </div>
+    <div class="legend-item"><div class="legend-color" style="background:#00d9ff"></div>Attractions</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ff2fd1"></div>Restaurants</div>
+    <div class="legend-item"><div class="legend-color" style="background:#00ffa3"></div>Malls</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ff9f43"></div>Cafes</div>
   </div>
 </div>
 
-<div class="controls">
-  <button class="control-btn" id="zoomInBtn">+</button>
-  <button class="control-btn" id="zoomOutBtn">−</button>
-  <button class="control-btn" id="resetBtn">Reset</button>
-</div>
-
-<canvas id="mapCanvas"></canvas>
+<div id="map"></div>
 
 <div class="popup" id="popup">
-
   <div class="popup-header">
     <div>
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-category" id="popupCategory"></div>
     </div>
-
     <button class="close-btn" id="closeBtn">&times;</button>
   </div>
-
-  <img id="popupImage" class="popup-image"/>
-
+  <img id="popupImage" class="popup-image" src=""/>
   <div class="section">
     <h3>PERSONAL REVIEW</h3>
     <p id="popupReview"></p>
   </div>
-
   <div class="section">
     <h3>TIPS</h3>
     <ul id="popupTips"></ul>
   </div>
-
   <div class="section">
     <h3>RATINGS</h3>
     <div class="ratings" id="popupRatings"></div>
   </div>
-
 </div>
 
 <script>
-  /*
-    ======================================================
-    EASY LOCATION CONFIG
-    ======================================================
-  */
-
   const LOCATIONS = [
     {
       name: "People's Park",
       category: "attraction",
-
-      lat: 7.0731,
-      lng: 125.6128,
-
-      image:
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
-
-      review:
-        "Beautiful public park in the middle of the city. Very relaxing at night and surprisingly clean.",
-
-      tips: [
-        "Best visited around sunset",
-        "Try local street food nearby",
-        "Good photography spot"
-      ],
-
-      ratings: {
-        Atmosphere: 9,
-        Crowds: 7,
-        Safety: 9,
-        Value: 10
-      }
+      lat: 7.0731, lng: 125.6128,
+      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
+      review: "Beautiful public park in the middle of the city. Very relaxing at night and surprisingly clean.",
+      tips: ["Best visited around sunset", "Try local street food nearby", "Good photography spot"],
+      ratings: { Atmosphere: 9, Crowds: 7, Safety: 9, Value: 10 }
     },
-
     {
       name: "Abreeza Mall",
       category: "mall",
-
-      lat: 7.0913,
-      lng: 125.6134,
-
-      image:
-        "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200",
-
-      review:
-        "Modern mall with lots of food options and a more premium relaxed atmosphere.",
-
-      tips: [
-        "Weekdays are quieter",
-        "Great coffee spots",
-        "Cinema is excellent"
-      ],
-
-      ratings: {
-        Shopping: 9,
-        Food: 9,
-        Comfort: 10,
-        Parking: 8
-      }
+      lat: 7.0913, lng: 125.6134,
+      image: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200",
+      review: "Modern mall with lots of food options and a more premium relaxed atmosphere.",
+      tips: ["Weekdays are quieter", "Great coffee spots", "Cinema is excellent"],
+      ratings: { Shopping: 9, Food: 9, Comfort: 10, Parking: 8 }
     },
-
     {
       name: "Roxas Night Market",
       category: "restaurant",
-
-      lat: 7.0686,
-      lng: 125.6111,
-
-      image:
-        "https://images.unsplash.com/photo-1523906630133-f6934a1ab2b9?q=80&w=1200",
-
-      review:
-        "One of the best places for cheap food and authentic Davao nightlife.",
-
-      tips: [
-        "Bring cash",
-        "Gets crowded late at night",
-        "Try grilled seafood"
-      ],
-
-      ratings: {
-        Food: 10,
-        Price: 10,
-        Crowds: 5,
-        Experience: 10
-      }
+      lat: 7.0686, lng: 125.6111,
+      image: "https://images.unsplash.com/photo-1523906630133-f6934a1ab2b9?q=80&w=1200",
+      review: "One of the best places for cheap food and authentic Davao nightlife.",
+      tips: ["Bring cash", "Gets crowded late at night", "Try grilled seafood"],
+      ratings: { Food: 10, Price: 10, Crowds: 5, Experience: 10 }
     }
   ];
-
-  /*
-    ======================================================
-    MAP CONFIG
-    ======================================================
-  */
-
-  const MAP_BOUNDS = {
-    minLat: 6.85,
-    maxLat: 7.25,
-    minLng: 125.30,
-    maxLng: 125.75
-  };
 
   const CATEGORY_COLORS = {
     attraction: "#00d9ff",
@@ -484,322 +202,63 @@
     cafe: "#ff9f43"
   };
 
-  const canvas = document.getElementById("mapCanvas");
-  const ctx = canvas.getContext("2d");
+  // Initialize MapLibre
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    center: [125.6128, 7.0731], // [lng, lat]
+    zoom: 13
+  });
 
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
-
-  let zoom = 1;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  let pulse = 0;
-
-  function latLngToXY(lat, lng) {
-    const x =
-      ((lng - MAP_BOUNDS.minLng) /
-      (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * width;
-
-    const y =
-      height -
-      ((lat - MAP_BOUNDS.minLat) /
-      (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * height;
-
-    return {
-      x: x * zoom + offsetX,
-      y: y * zoom + offsetY
-    };
-  }
-
-  function drawGrid() {
-    ctx.strokeStyle = "rgba(255,255,255,0.04)";
-    ctx.lineWidth = 1;
-
-    const spacing = 70 * zoom;
-
-    for (let x = offsetX % spacing; x < width; x += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-
-    for (let y = offsetY % spacing; y < height; y += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-  }
-
-  function drawConnections() {
-    ctx.strokeStyle = "rgba(0,217,255,0.12)";
-    ctx.lineWidth = 1.5;
-
-    for (let i = 0; i < LOCATIONS.length - 1; i++) {
-      const a = latLngToXY(
-        LOCATIONS[i].lat,
-        LOCATIONS[i].lng
-      );
-
-      const b = latLngToXY(
-        LOCATIONS[i + 1].lat,
-        LOCATIONS[i + 1].lng
-      );
-
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-    }
-  }
-
-  function drawLocations() {
-    LOCATIONS.forEach(location => {
-      const { x, y } = latLngToXY(location.lat, location.lng);
-
-      const color =
-        CATEGORY_COLORS[location.category] || "#00d9ff";
-
-      const radius = 8 + Math.sin(pulse * 0.05) * 2;
-
-      /*
-        Glow
-      */
-
-      const glow = ctx.createRadialGradient(
-        x, y, 0,
-        x, y, radius * 3
-      );
-
-      glow.addColorStop(0, color + "88");
-      glow.addColorStop(1, "transparent");
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius * 3, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      /*
-        Core
-      */
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-
-      /*
-        Ring
-      */
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius + 5, 0, Math.PI * 2);
-      ctx.strokeStyle = color + "88";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      /*
-        Label
-      */
-
-      ctx.font = "13px Inter";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(location.name, x + 14, y + 4);
-    });
-  }
-
-  function render() {
-    pulse++;
-
-    ctx.clearRect(0, 0, width, height);
-
-    drawGrid();
-    drawConnections();
-    drawLocations();
-
-    requestAnimationFrame(render);
-  }
-
-  render();
-
-  /*
-    ======================================================
-    POPUP
-    ======================================================
-  */
-
-  const popup = document.getElementById("popup");
+  // Handle markers and popup logic
+  const popupElement = document.getElementById("popup");
 
   function openPopup(location) {
-    popup.classList.add("active");
+    popupElement.classList.add("active");
+    document.getElementById("popupTitle").textContent = location.name;
+    document.getElementById("popupCategory").textContent = location.category;
+    document.getElementById("popupImage").src = location.image;
+    document.getElementById("popupReview").textContent = location.review;
 
-    document.getElementById("popupTitle").textContent =
-      location.name;
-
-    document.getElementById("popupCategory").textContent =
-      location.category;
-
-    document.getElementById("popupImage").src =
-      location.image;
-
-    document.getElementById("popupReview").textContent =
-      location.review;
-
-    const tipsContainer =
-      document.getElementById("popupTips");
-
+    const tipsContainer = document.getElementById("popupTips");
     tipsContainer.innerHTML = "";
-
     location.tips.forEach(tip => {
       const li = document.createElement("li");
       li.textContent = tip;
       tipsContainer.appendChild(li);
     });
 
-    const ratingsContainer =
-      document.getElementById("popupRatings");
-
+    const ratingsContainer = document.getElementById("popupRatings");
     ratingsContainer.innerHTML = "";
-
     Object.entries(location.ratings).forEach(([k,v]) => {
       const card = document.createElement("div");
-
       card.className = "rating-card";
-
-      card.innerHTML = `
-        <span>${v}/10</span>
-        ${k}
-      `;
-
+      card.innerHTML = `<span>${v}/10</span>${k}`;
       ratingsContainer.appendChild(card);
     });
   }
 
-  document
-    .getElementById("closeBtn")
-    .addEventListener("click", () => {
-      popup.classList.remove("active");
-    });
-
-  /*
-    ======================================================
-    CLICK DETECTION
-    ======================================================
-  */
-
-  canvas.addEventListener("click", e => {
-    const rect = canvas.getBoundingClientRect();
-
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    LOCATIONS.forEach(location => {
-      const { x, y } =
-        latLngToXY(location.lat, location.lng);
-
-      const distance =
-        Math.hypot(mouseX - x, mouseY - y);
-
-      if (distance < 20) {
-        openPopup(location);
-      }
-    });
+  // Close Popup
+  document.getElementById("closeBtn").addEventListener("click", () => {
+    popupElement.classList.remove("active");
   });
 
-  /*
-    ======================================================
-    CONTROLS
-    ======================================================
-  */
+  // Add markers to map
+  LOCATIONS.forEach(loc => {
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.style.backgroundColor = CATEGORY_COLORS[loc.category] || "#00d9ff";
+    el.style.boxShadow = `0 0 15px ${CATEGORY_COLORS[loc.category]}cc`;
 
-  document
-    .getElementById("zoomInBtn")
-    .addEventListener("click", () => {
-      zoom *= 1.15;
+    new maplibregl.Marker({ element: el })
+      .setLngLat([loc.lng, loc.lat])
+      .addTo(map);
+
+    el.addEventListener('click', () => {
+      openPopup(loc);
+      map.flyTo({ center: [loc.lng, loc.lat], zoom: 15, essential: true });
     });
-
-  document
-    .getElementById("zoomOutBtn")
-    .addEventListener("click", () => {
-      zoom *= 0.85;
-    });
-
-  document
-    .getElementById("resetBtn")
-    .addEventListener("click", () => {
-      zoom = 1;
-      offsetX = 0;
-      offsetY = 0;
-    });
-
-  /*
-    ======================================================
-    DRAGGING
-    ======================================================
-  */
-
-  let dragging = false;
-  let startX = 0;
-  let startY = 0;
-
-  canvas.addEventListener("mousedown", e => {
-    dragging = true;
-
-    startX = e.clientX;
-    startY = e.clientY;
-
-    canvas.style.cursor = "grabbing";
   });
-
-  window.addEventListener("mouseup", () => {
-    dragging = false;
-    canvas.style.cursor = "grab";
-  });
-
-  window.addEventListener("mousemove", e => {
-    if (!dragging) return;
-
-    offsetX += e.clientX - startX;
-    offsetY += e.clientY - startY;
-
-    startX = e.clientX;
-    startY = e.clientY;
-  });
-
-  /*
-    ======================================================
-    RESIZE
-    ======================================================
-  */
-
-  window.addEventListener("resize", () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  /*
-    ======================================================
-    EASY ADD LOCATION
-    ======================================================
-
-    addLocation({
-      name: "...",
-      category: "...",
-      lat: ...,
-      lng: ...,
-      image: "...",
-      review: "...",
-      tips: [],
-      ratings: {}
-    });
-
-  */
-
-  function addLocation(location) {
-    LOCATIONS.push(location);
-  }
 </script>
 
 </body>
