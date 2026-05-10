@@ -9,7 +9,7 @@ const LOCATIONS = [
 	cost: "Free Entry",
 	review: "Nice small park in the middle of the city. The seating is outdated and unsafe. It has some interesting sculptures of people and Durians. There's a museum inside the park which is worth a look.",
 	tips: ["Closed during holidays.", "Usually lots of people there.", "Bags will be checked by security."],
-	ratings: { Walkability: 10, Seating: 1, Kid Friendly: 7, Experience: 6 }
+	ratings: { Walkability: 10, Seating: 1, "Kid Friendly": 7, Experience: 6 }
     },
 
     {
