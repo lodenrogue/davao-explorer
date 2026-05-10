@@ -7,9 +7,9 @@ const LOCATIONS = [
 	googleMapsLink: "https://maps.app.goo.gl/YGgEumHghPxvhJ6U7",
 	image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
 	cost: "Free Entry",
-	review: "Beautiful public park in the middle of the city. Very relaxing at night and surprisingly clean.",
-	tips: ["Best visited around sunset", "Try local street food nearby", "Good photography spot"],
-	ratings: { Atmosphere: 9, Crowds: 7, Safety: 9, Value: 10 }
+	review: "Nice small park in the middle of the city. The seating is outdated and unsafe. It has some interesting sculptures of people and Durians. There's a museum inside the park which is worth a look.",
+	tips: ["Closed during holidays.", "Usually lots of people there.", "Bags will be checked by security."],
+	ratings: { Walkability: 10, Seating: 1, Kid Friendly: 7, Experience: 6 }
     },
 
     {
