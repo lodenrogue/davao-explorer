@@ -1,5 +1,9 @@
 # Davao City Explorer
 
+<p align="center">
+   <img src="assets/dava-explorer.jpeg" alt="Davao Explorer" width="600">
+</p>
+
 A visual exploration of locations, attractions, and stays I've experienced in Davao.
 
 [Try it here](https://arkvis.com/davao)
