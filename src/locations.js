@@ -26,16 +26,16 @@ const LOCATIONS = [
     },
 
     {
-	name: "Abreeza Mall",
+	name: "Ayala Malls Abreeza",
 	category: "mall",
 	lat: 7.09122,
 	lng: 125.61134,
 	googleMapsLink: "https://maps.app.goo.gl/mDkUasT5pzAUAkLy6",
 	image: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200",
 	cost: "Free Entry",
-	review: "Modern mall with lots of food options and a more premium relaxed atmosphere.",
-	tips: ["Weekdays are quieter", "Great coffee spots", "Cinema is excellent"],
-	ratings: { Shopping: 9, Food: 9, Comfort: 10, Parking: 8 }
+	review: "One of the larger malls in Davao, this place occasionally hosts events. Like most malls, the items are a bit pricey. It features a great bookstore along with plenty of cafes to relax in. There’s also a Globe store inside where you can conveniently top up your mobile account with cash.",
+	tips: ["If you bring luggage, security may inspect it or have their drug-sniffing dog check it.", "Food options can be a bit limited if you're lactose intolerant."],
+	ratings: { Shopping: 10, Food: 7, Affordability: 5, Cleanliness: 10 }
     },
 
     {
