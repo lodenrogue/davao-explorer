@@ -1,5 +1,17 @@
 const LOCATIONS = [
     {
+	name: "Avida Towers Davao",
+	category: "accomodation",
+	lat: 7.070068001465722,
+	lng: 125.61131269762978,
+	googleMapsLink: "https://maps.app.goo.gl/PytCf7qx5PvkwsGQ6",
+	image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
+	cost: "₱1400 - ₱1800 per night on Airbnb",
+	review: "Clean condo living. Security guards are friendly and accomodating. Easy to walk to food, Roxas Night Market, and Ateneo De Davao University.",
+	tips: ["If you cook make sure to open a window so the smell can exit the room.", "Grab delivers but you have to pick it up outside by the curb.", "Side entrance closes early around 8 pm.", "There's a 7-Eleven downstairs open 24 hours so you can get food or toiletries at any time.", "Security will ask to see your ID and a copy of your reservation."],
+	ratings: { Cleanliness: 8, Comfort: 7, Quietness: 8, "Check-in Process": 8 }
+    },
+    {
 	name: "People's Park",
 	category: "park",
 	lat: 7.070652,

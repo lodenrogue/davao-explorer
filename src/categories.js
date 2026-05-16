@@ -4,7 +4,7 @@ const CATEGORY_COLORS = {
     park: "#00ffa3",
     market: "#ff9f43",
     mall: "#ff2fd1",
-    cafe: "#ff9f43"
+    accomodation: "#00d9ff"
 };
 
 function generateLegend() {
